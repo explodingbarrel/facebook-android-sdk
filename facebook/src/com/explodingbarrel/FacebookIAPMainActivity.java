@@ -37,18 +37,37 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
 
     private String AppId;
     private Session CurrentSession = null;
-    
+
+    private String MessageHandlerName;
+    private String AuthorizeSuccessMessage;
+    private String AuthorizeFailedMessage;
+
     boolean Init( String appId, String messageHandler, String authorizeSuccess, String authorizeFail )
     {
+        Log.d(TAG, "Facebook Init : appId = " + appId );
+
         boolean initialized = false;
         
         if( this.CurrentSession == null )
         {
+            this.MessageHandlerName = messageHandler;
+            this.AuthorizeSuccessMessage = authorizeSuccess;
+            this.AuthorizeFailedMessage = authorizeFail;
+
             this.CurrentSession = new Session.Builder( this ).setApplicationId( appId ).build();
             if( this.CurrentSession != null )
             {
                 initialized = true;
+                Log.d(TAG, "Facebook Init : Success" );
             }
+            else
+            {
+                Log.d(TAG, "Facebook Init : Failed - Could not construct Session using Session.Builder" );
+            }
+        }
+        else
+        {
+            Log.d(TAG, "Facebook Init : Failed - CurrentSession already exists" );
         }
 
         return initialized;
@@ -56,6 +75,8 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     
     boolean Login( String scope, boolean allowUI )
     {
+        Log.d( TAG, "Facebook Login : scope = " + scope + " allowUI = " + allowUI );
+
         boolean success = false;
         
         if( this.CurrentSession != null )
@@ -68,9 +89,18 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
                 openRequest.setCallback( this.SessionStateCallback );
                 this.CurrentSession.openForRead( openRequest );
                 success = true;
+                Log.d(TAG, "Facebook Login : Success" );
+            }
+            else
+            {
+                Log.d(TAG, "Facebook Login : Failed - Could not construct an OpenRequest" );
             }
         }
-        
+        else
+        {
+            Log.d(TAG, "Facebook Login : Failed - CurrentSession does not exist. Call Init before Login" );
+        }
+
         return success;
     }
 
@@ -84,17 +114,22 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
 
     void onSessionStateChange(Session session, SessionState state, Exception exception)
     {
-        if( session == CurrentSession )
+        if( session == this.CurrentSession )
         {
+            Log.d(TAG, "Facebook onSessionStateChange : state = " + state );
             switch( state )
             {
                 case OPENED:
                 {
+                    String accessToken = session.getAccessToken();
+                    UnityPlayer.UnitySendMessage( this.MessageHandlerName, this.AuthorizeSuccessMessage, accessToken );
+                    Log.d(TAG, "Facebook OPENED : accessToken = " + accessToken );
                     break;
                 }
                 case CLOSED:
                 case CLOSED_LOGIN_FAILED:
                 {
+                    UnityPlayer.UnitySendMessage( this.MessageHandlerName, this.AuthorizeFailedMessage, "0" );
                     break;
                 }
                 default:
