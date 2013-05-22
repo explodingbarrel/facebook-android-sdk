@@ -6,7 +6,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
+import android.util.Base64;
 import android.content.Intent;
+import android.content.pm.*;
 
 import com.unity3d.player.*;
 import com.facebook.*;
@@ -15,6 +17,7 @@ import com.facebook.widget.WebDialog;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Iterator;
+import java.security.MessageDigest;
 
 import org.json.JSONObject;
 
@@ -28,23 +31,55 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult( requestCode, resultCode, data );
-        Session session = Session.getActiveSession();
-        if( session != null )
+        if( this.CurrentSession != null )
         {
-            session.onActivityResult(this, requestCode, resultCode, data);
+        	this.CurrentSession.onActivityResult(this, requestCode, resultCode, data);
         }
+    }
+    
+    @Override
+    public void onCreate(Bundle savedInstanceState)
+    {
+        super.onCreate(savedInstanceState);
+        
+	    //try 
+	    //{
+	    //    PackageInfo info = getPackageManager().getPackageInfo("com.kabam.ff6android", PackageManager.GET_SIGNATURES);
+	    //    for (Signature signature : info.signatures) 
+	    //    {
+	    //    	MessageDigest md = MessageDigest.getInstance("SHA");
+	    //    	md.update(signature.toByteArray());
+	    //    	Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
+	    //    }
+	    //} 
+	    //catch (Exception e) {}
+    }
+    
+    @Override
+    protected void onResume()
+    {
+    	try
+    	{
+    		super.onResume();
+    	}
+    	catch( Exception e )
+		{
+			Log.d(TAG, "onResume : Failed - " + e.getMessage() );
+		}
     }
     
    
 
     private String AppId;
     private Session CurrentSession = null;
+    private boolean Initialized = false;
 
     boolean FacebookInit( String appId )
     {
         Log.d(TAG, "Facebook Init : appId = " + appId );
 
-        boolean initialized = false;
+        this.Initialized = false;
+        this.AppId = appId;
         
         if( this.CurrentSession == null )
         {
@@ -52,7 +87,7 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
             if( this.CurrentSession != null )
             {
                 Session.setActiveSession( this.CurrentSession );
-                initialized = true;
+                this.Initialized = true;
                 Log.d(TAG, "Facebook Init : Success" );
             }
             else
@@ -65,17 +100,19 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
             Log.d(TAG, "Facebook Init : Failed - CurrentSession already exists" );
         }
 
-        return initialized;
+        return this.Initialized;
     }
     
     private class OpenForReadSessionStateCallback implements Session.StatusCallback
     {
+    	private FacebookIAPMainActivity Activity;
         private String MessageHandler;
         private String SuccessMsg;
         private String FailMsg;
     
-        public OpenForReadSessionStateCallback( String messageHandler, String successMsg, String failMsg )
+        public OpenForReadSessionStateCallback( FacebookIAPMainActivity activity, String messageHandler, String successMsg, String failMsg )
         {
+        	this.Activity = activity;
             this.MessageHandler = messageHandler;
             this.SuccessMsg = successMsg;
             this.FailMsg = failMsg;
@@ -112,6 +149,9 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
                     UnityPlayer.UnitySendMessage( this.MessageHandler, this.FailMsg, "false" );
                 }
                 Log.d(TAG, "Facebook Login : Failed - " + error );
+                
+                //This has invalidated the session because the facebook API is bad. Clear it so that it will be recreated.
+                this.Activity.CurrentSession = null;
             }
         }
     };
@@ -121,6 +161,16 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
         Log.d( TAG, "Facebook Login : scope = " + scope + " allowUI = " + allowUI );
 
         boolean success = false;
+        
+        if( ( this.Initialized == true ) && ( this.CurrentSession == null ) )
+        {
+        	Log.d( TAG, "Facebook Login : Session was invalidated and is begin recreated" );
+        	this.CurrentSession = new Session.Builder( this ).setApplicationId( this.AppId  ).build();
+            if( this.CurrentSession != null )
+            {
+                Session.setActiveSession( this.CurrentSession );
+            }
+        }
     
         if( this.CurrentSession != null )
         {
@@ -128,28 +178,38 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
             {
                 public void run()
                 {
-                    Session.OpenRequest openRequest = new Session.OpenRequest( FacebookIAPMainActivity.this );
-                    if( openRequest != null )
-                    {
-                        List<String> permissions = Arrays.asList( scope.split( "," ) );
-                        openRequest.setPermissions( permissions );
-                        if( allowUI == true )
-                        {
-                            openRequest.setLoginBehavior( SessionLoginBehavior.SSO_WITH_FALLBACK );
-                        }
-                        else
-                        {
-                            openRequest.setLoginBehavior( SessionLoginBehavior.SSO_ONLY );
-                        }
-                        openRequest.setCallback( new OpenForReadSessionStateCallback( messageHandler, authorizeSuccess, authorizeFail ) );
-                        FacebookIAPMainActivity.this.CurrentSession.openForRead( openRequest );
-                        
-                        Log.d(TAG, "Facebook Login : Pending" );
-                    }
-                    else
-                    {
-                        Log.d(TAG, "Facebook Login : Failed - Could not construct an OpenRequest" );
-                    }
+                	Log.d(TAG, "Facebook Login : Starting state - " + FacebookIAPMainActivity.this.CurrentSession.getState() );	
+                	if( FacebookIAPMainActivity.this.CurrentSession.isOpened() == true )
+                	{
+                		String accessToken = FacebookIAPMainActivity.this.CurrentSession.getAccessToken();
+                		Log.d(TAG, "Facebook Login : Already Logged In accessToken = " + accessToken );	
+                        UnityPlayer.UnitySendMessage( messageHandler, authorizeSuccess, accessToken );
+                	}
+                	else
+                	{
+	                    Session.OpenRequest openRequest = new Session.OpenRequest( FacebookIAPMainActivity.this );
+	                    if( openRequest != null )
+	                    {
+	                        List<String> permissions = Arrays.asList( scope.split( "," ) );
+	                        openRequest.setPermissions( permissions );
+	                        if( allowUI == true )
+	                        {
+	                            openRequest.setLoginBehavior( SessionLoginBehavior.SSO_WITH_FALLBACK );
+	                        }
+	                        else
+	                        {
+	                            openRequest.setLoginBehavior( SessionLoginBehavior.SSO_ONLY );
+	                        }
+	                        openRequest.setCallback( new OpenForReadSessionStateCallback( FacebookIAPMainActivity.this, messageHandler, authorizeSuccess, authorizeFail ) );
+	                        FacebookIAPMainActivity.this.CurrentSession.openForRead( openRequest );
+	                        
+	                        Log.d(TAG, "Facebook Login : Pending" );
+	                    }
+	                    else
+	                    {
+	                        Log.d(TAG, "Facebook Login : Failed - Could not construct an OpenRequest" );
+	                    }
+                	}
                 }
             } );
             success = true;

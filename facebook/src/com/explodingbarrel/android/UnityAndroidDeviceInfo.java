@@ -53,10 +53,31 @@ class UnityAndroidDeviceInfo
 			if( activity != null )
 			{
 				WifiManager wifiMan = (WifiManager) activity.getSystemService( Context.WIFI_SERVICE );
-				WifiInfo wifiInf = wifiMan.getConnectionInfo();
-				mac = wifiInf.getMacAddress();
-				
-				Log.d(TAG, "DeviceInfo : Success - mac address = " + mac );
+                if( wifiMan != null )
+                {
+                    WifiInfo wifiInf = wifiMan.getConnectionInfo();
+                    if( wifiInf != null )
+                    {
+                        String candidate = wifiInf.getMacAddress();
+                        if( candidate != null )
+                        {
+                            mac = candidate;
+                            Log.d(TAG, "DeviceInfo : Success - mac address = " + mac );
+                        }
+                        else
+                        {
+                            Log.d(TAG, "DeviceInfo : Failed - Couldn't get the WifiInfo.getMacAddress return null");
+                        }
+                    }
+                    else
+                    {
+                        Log.d(TAG, "DeviceInfo : Failed - Couldn't get the WifiInfo from the WifiManager");
+                    }
+                }
+                else
+                {
+                    Log.d(TAG, "DeviceInfo : Failed - Couldn't get the WifiManager");
+                }
 			}
 			else
 			{
