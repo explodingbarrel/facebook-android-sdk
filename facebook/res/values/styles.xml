@@ -16,6 +16,28 @@
 -->
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <style name="NotificationText">
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+    </style>
+    
+    <style name="NotificationTextShadow" parent="NotificationText">
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:shadowColor">@android:color/background_dark</item>
+        <item name="android:shadowDx">1.0</item>
+        <item name="android:shadowDy">1.0</item>
+        <item name="android:shadowRadius">1</item>
+    </style>
+    
+    <style name="NotificationTitle">
+        <item name="android:textColor">?android:attr/textColorPrimary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    
+    <style name="ButtonBackground">
+        <item name="android:background">@android:color/background_dark</item>
+    </style>
+    
     <color name="com_facebook_blue">#3B5998</color>
     
     <color name="com_facebook_usersettingsfragment_connected_text_color">#FFFFFF</color>
