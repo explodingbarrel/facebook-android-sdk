@@ -9,6 +9,8 @@ import android.util.Log;
 import android.util.Base64;
 import android.content.Intent;
 import android.content.pm.*;
+import android.webkit.WebView;
+import android.view.View;
 
 import com.unity3d.player.*;
 import com.facebook.*;
@@ -20,6 +22,8 @@ import java.util.Iterator;
 import java.security.MessageDigest;
 
 import org.json.JSONObject;
+
+import com.google.android.vending.expansion.downloader.*;
 
 
 public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivity
@@ -68,8 +72,43 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
 		}
     }
     
-   
+    boolean WebViewShowFullscreen( String baseurl, String stoken, int page, boolean debug )
+    {
+    	Log.d(TAG, "WebViewShowFullscreen : baseurl = " + baseurl + " stoken = " + stoken + " page = " + page );
+    	
+    	boolean valid = false;
+    	
+    	Intent webViewIntent = new Intent(this, FullScreenWebViewActivity.class);
+    	if( webViewIntent != null )
+    	{
+    		Log.d(TAG, "WebViewShowFullscreen : Pending - Starting full screen webview activity" );
+    		webViewIntent.putExtra("baseurl", baseurl);
+    		webViewIntent.putExtra("stoken", stoken);
+    		webViewIntent.putExtra("page", page);
+    		webViewIntent.putExtra("debug", debug);
+    		startActivity( webViewIntent );
+    		valid = true;
+    	}
+    	else
+    	{
+    		Log.d(TAG, "WebViewShowFullscreen : Failed - Couldn't load the fullscreenwebview from the layout webviewfullscreen" );
+    	}
 
+    	return valid;
+    }
+    
+    boolean WebViewPopup( String baseurl, String stoken, int popup, int x, int y, int width, int height )
+    {
+    	boolean valid = false;
+    	return valid;
+    }
+    
+    boolean WebViewClose()
+    {
+    	boolean valid = false;
+    	return valid;
+    }
+    
     private String AppId;
     private Session CurrentSession = null;
     private boolean Initialized = false;
