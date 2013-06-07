@@ -61,7 +61,7 @@ public class FullScreenWebViewActivity extends Activity
 		int page = getIntent().getExtras().getInt("page");
 		this.Debug = getIntent().getExtras().getBoolean("debug");
 		
-		Log.d( TAG, "onCreate : baseurl = " + this.BaseUrl + " stoken = " + this.SToken + " page = " + page + " debug = " + this.Debug );
+		Log.d( TAG, "FullScreenWebViewActivity onCreate : baseurl = " + this.BaseUrl + " stoken = " + this.SToken + " page = " + page + " debug = " + this.Debug );
     	
     	setContentView( Helpers.getLayoutResource(this, "webviewfullscreen") );
     	
@@ -73,6 +73,7 @@ public class FullScreenWebViewActivity extends Activity
     			 										@Override
     			 										public void onClick(View arg0)
     			 										{
+    			 											Log.d( TAG, "FullScreenWebViewActivity Closing : Success" );
     			 											finish();
     			 										}
     												});
@@ -86,6 +87,7 @@ public class FullScreenWebViewActivity extends Activity
     			 										public void onClick(View arg0)
     			 										{
     			 											String url = generateURL( 0 );
+    			 											Log.d( TAG, "FullScreenWebViewActivity Switching to Tournament info (" + url + ") : Success" );
     			 											FullScreenWebViewActivity.this.FullScreenWebView.loadUrl( url );
     			 										}
     												});
@@ -99,6 +101,7 @@ public class FullScreenWebViewActivity extends Activity
     			 										public void onClick(View arg0)
     			 										{
     			 											String url = generateURL( 1 );
+    			 											Log.d( TAG, "FullScreenWebViewActivity Switching to Leaderboard info (" + url + ") : Success" );
     			 											FullScreenWebViewActivity.this.FullScreenWebView.loadUrl( url );
     			 										}
     												});
