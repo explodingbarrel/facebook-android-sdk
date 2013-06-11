@@ -5,19 +5,13 @@ import com.explodingbarrel.iap.MainActivity;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Base64;
 import android.content.Intent;
 import android.content.pm.*;
 import android.webkit.WebView;
 import android.view.View;
-import android.view.Window;
-import android.app.Dialog;
-import android.app.Activity;
-import android.widget.*;
-import android.widget.LinearLayout.LayoutParams;
-import android.webkit.*;
-import android.util.DisplayMetrics;
 
 import com.unity3d.player.*;
 import com.facebook.*;
@@ -29,8 +23,6 @@ import java.util.Iterator;
 import java.security.MessageDigest;
 
 import org.json.JSONObject;
-
-import com.google.android.vending.expansion.downloader.*;
 
 
 public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivity

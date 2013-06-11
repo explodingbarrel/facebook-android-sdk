@@ -13,7 +13,6 @@ import android.widget.LinearLayout.LayoutParams;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import com.google.android.vending.expansion.downloader.*;
  
 public class WebViewFullScreenActivity extends Activity
 {
