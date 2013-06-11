@@ -12,6 +12,9 @@ import android.content.Intent;
 import android.content.pm.*;
 import android.webkit.WebView;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
 
 import com.unity3d.player.*;
 import com.facebook.*;
@@ -71,9 +74,9 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
 		}
     }
     
-    boolean WebViewShowFullscreen( String url, String tabs )
+    boolean WebViewShowFullscreen( String url, String tabs, int targetWidth )
     {
-    	Log.d(TAG, "WebViewShowFullscreen : baseurl = " + url + " tabs = " + tabs );
+    	Log.d(TAG, "WebViewShowFullscreen : url = " + url + " tabs = " + tabs + " targetWidth = " + targetWidth );
     	
     	boolean valid = false;
     	
@@ -83,6 +86,7 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     		Log.d(TAG, "WebViewShowFullscreen : Pending - Starting full screen webview activity" );
     		webViewIntent.putExtra("url", url);
     		webViewIntent.putExtra("tabs", tabs);
+    		webViewIntent.putExtra("targetWidth", targetWidth);
     		startActivity( webViewIntent );
     		valid = true;
     	}
@@ -94,31 +98,55 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     	return valid;
     }
     
-    boolean WebViewPopup( String baseurl, String stoken, int popup, final float normalizedX, final float normalizedY, final float normalizedWidth, final float normalizedHeight )
+    private WebViewDialog ActiveWebViewPopup = null; 
+    
+    boolean WebViewPopup( final String url, final int targetWidth, final float normalizedX, final float normalizedY, final float normalizedWidth, final float normalizedHeight )
     {	
+    	Log.d(TAG, "WebViewPopup : url = " + url + " normalizedX = " + normalizedX + " normalizedY = " + normalizedY + " normalizedWidth = " + normalizedWidth + " normalizedHeight = " + normalizedHeight );
+    	
     	this.runOnUiThread( new Runnable()
     	{
     		 public void run()
              {				
     			 DisplayMetrics metrics = new DisplayMetrics();
     			 getWindowManager().getDefaultDisplay().getMetrics(metrics);
+    			 
+    			 Log.d(TAG, "WebViewPopup : Screen Width = " + metrics.widthPixels + " Screen Height = " + metrics.heightPixels );
 				
     			 float x = normalizedX * metrics.widthPixels;
     			 float y = normalizedY * metrics.heightPixels;
     			 float width = normalizedWidth * metrics.widthPixels;
-    			 float height = normalizedWidth * metrics.heightPixels; 
+    			 float height = normalizedHeight * metrics.heightPixels;
     			 
-    			 WebViewDialog dialog = new WebViewDialog( FacebookIAPMainActivity.this, "http://www.google.com", (int)x, (int)y, (int)width, (int)height );
-    			 dialog.show();
+    			 Log.d(TAG, "WebViewPopup : url = " + url + " x = " + x + " y = " + y + " width = " + width + " height = " + height );
+    			 
+    			 FacebookIAPMainActivity.this.ActiveWebViewPopup = new WebViewDialog( FacebookIAPMainActivity.this, url, targetWidth, (int)x, (int)y, (int)width, (int)height );
+    			 Window window = FacebookIAPMainActivity.this.ActiveWebViewPopup.getWindow();
+    			 window.setFlags( WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL );
+    			 window.clearFlags( WindowManager.LayoutParams.FLAG_DIM_BEHIND );
+    			 FacebookIAPMainActivity.this.ActiveWebViewPopup.show();
              }
     	} );
     	
     	return true;
     }
     
-    boolean WebViewClose()
+    boolean WebViewPopupClose()
     {
+    	Log.d(TAG, "WebViewPopupClose" );
     	boolean valid = false;
+    	if( this.ActiveWebViewPopup != null )
+    	{
+    		valid = true;
+    		this.runOnUiThread( new Runnable()
+    		{
+    			public void run()
+    			{	
+    				FacebookIAPMainActivity.this.ActiveWebViewPopup.dismiss();
+		    	}
+    		});
+    	}
+    	
     	return valid;
     }
     

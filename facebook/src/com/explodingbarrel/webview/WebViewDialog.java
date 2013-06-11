@@ -13,6 +13,7 @@ public class WebViewDialog extends Dialog
 {
 	private Activity Parent = null;
 	private String Url = null;
+	private int TargetWidth = 1024;
 	private int X = 0;
 	private int Y = 0;
 	private int Width = 0;
@@ -32,11 +33,12 @@ public class WebViewDialog extends Dialog
 	    }
 	}
 	
-	public WebViewDialog( Activity a, String url, int x, int y, int width, int height )
+	public WebViewDialog( Activity a, String url, int targetWidth, int x, int y, int width, int height )
 	{
 		super(a);
 		this.Parent = a;
 		this.Url = url;
+		this.TargetWidth = targetWidth;
 		this.X = x;
 		this.Y = y;
 		this.Width = width;
@@ -61,6 +63,9 @@ public class WebViewDialog extends Dialog
 		webSettings.setJavaScriptEnabled( true );
 		webSettings.setLoadWithOverviewMode( true );
 		webSettings.setUseWideViewPort(true);
+		
+		float scale = ((float)this.TargetWidth) / this.Width;
+		webView.setInitialScale( (int)( scale * 100.0f ) );
 	    
 		webView.loadUrl( this.Url );
 

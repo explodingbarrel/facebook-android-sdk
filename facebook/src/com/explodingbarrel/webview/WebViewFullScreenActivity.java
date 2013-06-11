@@ -41,6 +41,7 @@ public class WebViewFullScreenActivity extends Activity
 		
 		String url = getIntent().getExtras().getString("url");
 		String tabsJson = getIntent().getExtras().getString("tabs");
+		int targetWidth = getIntent().getExtras().getInt("targetWidth");
 		
 		Log.d( TAG, "FullScreenWebViewActivity onCreate : url = " + url + " tabs = " + tabsJson );
 		
@@ -58,7 +59,8 @@ public class WebViewFullScreenActivity extends Activity
         this.CloseButton = new ImageButton(this);
     	if( this.CloseButton != null )
     	{
-    		this.CloseButton.setImageResource( Helpers.getIdResource(this, "drawable/back") );
+    		this.CloseButton.setImageResource( Helpers.getIdResource(this, "drawable/tournament_back") );
+    		this.CloseButton.setBackgroundColor(0xFF000000);
     		this.CloseButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
     		this.CloseButton.setOnClickListener( new OnClickListener()
     												{
@@ -87,6 +89,8 @@ public class WebViewFullScreenActivity extends Activity
     				final String tabImage = tab.getString( "Image" );
 
     				Button tabButton = new Button(this);
+    				tabButton.setBackgroundColor(0xFF000000);
+    				tabButton.setTextColor(0xFFFFFFFF);
     				tabButton.setText( tabText );
     				if( tabImage.length() > 0 )
     				{
@@ -121,7 +125,7 @@ public class WebViewFullScreenActivity extends Activity
 		//Support for diff screens
 		DisplayMetrics metrics = new DisplayMetrics();
 	    getWindowManager().getDefaultDisplay().getMetrics(metrics);
-	    float scale = 1024.0f / metrics.widthPixels;
+	    float scale = ((float)targetWidth) / metrics.widthPixels;
 	    this.FullScreenWebView.setInitialScale( (int)( scale * 100.0f ) );
 	    
 		//String url = generateURL( page );
