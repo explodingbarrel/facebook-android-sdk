@@ -13,6 +13,8 @@ import android.widget.LinearLayout.LayoutParams;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
+import com.google.android.vending.expansion.downloader.*;
+
  
 public class WebViewFullScreenActivity extends Activity
 {
@@ -20,7 +22,7 @@ public class WebViewFullScreenActivity extends Activity
     private static final String TAG = "WebView";
     
 	private WebView FullScreenWebView;
-	private Button CloseButton;
+	private ImageButton CloseButton;
 	
 	private class InternalWebViewClient extends WebViewClient {
 	    @Override
@@ -53,10 +55,10 @@ public class WebViewFullScreenActivity extends Activity
         buttonFrame.setOrientation(LinearLayout.HORIZONTAL);
         buttonFrame.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         
-        this.CloseButton = new Button(this);
+        this.CloseButton = new ImageButton(this);
     	if( this.CloseButton != null )
     	{
-    		this.CloseButton.setText("Close");
+    		this.CloseButton.setImageResource( Helpers.getIdResource(this, "drawable/back") );
     		this.CloseButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
     		this.CloseButton.setOnClickListener( new OnClickListener()
     												{
@@ -83,9 +85,13 @@ public class WebViewFullScreenActivity extends Activity
     				final String tabText = tab.getString( "Text" );
     				final String tabUrl = tab.getString( "Url" );
     				final String tabImage = tab.getString( "Image" );
-    				
+
     				Button tabButton = new Button(this);
     				tabButton.setText( tabText );
+    				if( tabImage.length() > 0 )
+    				{
+    					tabButton.setCompoundDrawablesWithIntrinsicBounds(Helpers.getIdResource(this, tabImage), 0, 0, 0 );
+    				}
     				tabButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
     				tabButton.setOnClickListener( new OnClickListener()
 					{
