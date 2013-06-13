@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.DisplayMetrics;
+import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.webkit.*;
@@ -22,7 +23,6 @@ public class WebViewFullScreenActivity extends Activity
     private static final String TAG = "WebView";
     
 	private WebView FullScreenWebView;
-	private ImageButton CloseButton;
 	
 	private class InternalWebViewClient extends WebViewClient {
 	    @Override
@@ -35,87 +35,146 @@ public class WebViewFullScreenActivity extends Activity
 	    }
 	}
 	
+	private RelativeLayout CreateURLTab( final String url, String image, int backgroundColour, String badgeImage )
+	{
+		RelativeLayout tabLayout = new RelativeLayout( this );
+		
+		ImageButton button = new ImageButton(this);
+		button.setBackgroundColor(backgroundColour);
+		button.setImageResource( Helpers.getIdResource(this, image) );
+		RelativeLayout.LayoutParams buttonLayout = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+		buttonLayout.addRule(RelativeLayout.CENTER_IN_PARENT, 1);
+		button.setLayoutParams(buttonLayout);
+		button.setOnClickListener( new OnClickListener()
+		{
+				@Override
+				public void onClick(View arg0)
+				{
+					Log.d( TAG, "FullScreenWebViewActivity Switching to '" + url + "' : Success" );
+					WebViewFullScreenActivity.this.FullScreenWebView.loadUrl( url );
+				}
+		});
+		
+		tabLayout.addView( button );
+		
+		if( ( badgeImage != null ) && ( badgeImage.length() > 0 ) )
+		{
+			ImageView badge = new ImageView( this );
+			badge.setImageResource( Helpers.getIdResource(this, badgeImage) );
+			RelativeLayout.LayoutParams badgeLayout = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+			//badgeLayout.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+			badge.setLayoutParams( badgeLayout );
+			tabLayout.addView( badge );
+		}
+		
+		return tabLayout;
+	}
+	
 	public void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
 		
 		String url = getIntent().getExtras().getString("url");
-		String tabsJson = getIntent().getExtras().getString("tabs");
-		int targetWidth = getIntent().getExtras().getInt("targetWidth");
+		String configJson = getIntent().getExtras().getString("config");
 		
-		Log.d( TAG, "FullScreenWebViewActivity onCreate : url = " + url + " tabs = " + tabsJson );
+		Log.d( TAG, "FullScreenWebViewActivity onCreate : url = " + url + " config = " + configJson );
 		
+		//Get reasonable defaults for all of the title bar settings
+		String titleBarCloseImage = "";
+		String titleBarCloseText = "";
+		String titleBarBadgeImage = "";
+		int titleBarBackgroundColour = 0xff000000;
+		int titleBarTextColour = 0xffffffff;
+		boolean titleBarOnTop = true;
+		
+		int targetWidth = 1024;
+		
+		JSONObject config = null;
+    	try
+        {
+    		config = new JSONObject( configJson );
+    		
+    		JSONObject titleBar = config.getJSONObject( "titleBar" );
+    		if( titleBar != null )
+    		{
+    			titleBarCloseImage = titleBar.getString( "CloseImage" );
+    			titleBarBackgroundColour = titleBar.getInt( "BackgroundColour" );
+    			titleBarTextColour = titleBar.getInt( "TextColour" );
+    			titleBarOnTop = titleBar.getBoolean( "OnTop" );
+    			titleBarBadgeImage = titleBar.getString( "BadgeImage" );
+    		}
+    		
+    		targetWidth = config.getInt( "targetWidth" );
+        }
+        catch (org.json.JSONException ex)
+        {
+        }
+        
+
 		RelativeLayout fullFrame = new RelativeLayout( this );
         RelativeLayout.LayoutParams fullFrameLayout = new RelativeLayout.LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
         
         LinearLayout splitFrame = new LinearLayout( this );
         splitFrame.setOrientation(LinearLayout.VERTICAL);
-        splitFrame.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        LinearLayout.LayoutParams splitFrameLayoutParams = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        splitFrame.setLayoutParams(splitFrameLayoutParams);
         
-        LinearLayout buttonFrame = new LinearLayout( this );
-        buttonFrame.setOrientation(LinearLayout.HORIZONTAL);
-        buttonFrame.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        LinearLayout titleBarFrame = new LinearLayout( this );
+        titleBarFrame.setOrientation(LinearLayout.HORIZONTAL);
+        titleBarFrame.setBackgroundColor(titleBarBackgroundColour);
+        titleBarFrame.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
         
-        this.CloseButton = new ImageButton(this);
-    	if( this.CloseButton != null )
-    	{
-    		this.CloseButton.setImageResource( Helpers.getIdResource(this, "drawable/tournament_back") );
-    		this.CloseButton.setBackgroundColor(0xFF000000);
-    		this.CloseButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-    		this.CloseButton.setOnClickListener( new OnClickListener()
-    												{
-    			 										@Override
-    			 										public void onClick(View arg0)
-    			 										{
-    			 											Log.d( TAG, "FullScreenWebViewActivity Closing : Success" );
-    			 											finish();
-    			 										}
-    												});
-    		buttonFrame.addView(this.CloseButton);
-    	}
-    	
-    	try
+        ImageButton closeButton = new ImageButton(this);
+        closeButton.setBackgroundColor(titleBarBackgroundColour);
+        closeButton.setImageResource( Helpers.getIdResource(this, titleBarCloseImage) );
+        closeButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1.0f));
+        closeButton.setOnClickListener( new OnClickListener()
+		{
+			@Override
+			public void onClick(View arg0)
+			{
+				Log.d( TAG, "FullScreenWebViewActivity Closing : Success" );
+				finish();
+			}
+		});
+        titleBarFrame.addView(closeButton);
+        
+        if( config != null )
         {
-    		JSONArray tabs = new JSONArray( tabsJson );
-    		
-    		if( tabs != null )
-    		{
-    			for( int i = 0; i< tabs.length(); i++ )
-    			{
-    				JSONObject tab = tabs.getJSONObject( i );
-    				
-    				final String tabText = tab.getString( "Text" );
-    				final String tabUrl = tab.getString( "Url" );
-    				final String tabImage = tab.getString( "Image" );
-
-    				Button tabButton = new Button(this);
-    				tabButton.setBackgroundColor(0xFF000000);
-    				tabButton.setTextColor(0xFFFFFFFF);
-    				tabButton.setText( tabText );
-    				if( tabImage.length() > 0 )
-    				{
-    					tabButton.setCompoundDrawablesWithIntrinsicBounds(Helpers.getIdResource(this, tabImage), 0, 0, 0 );
-    				}
-    				tabButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-    				tabButton.setOnClickListener( new OnClickListener()
-					{
-							@Override
-							public void onClick(View arg0)
-							{
-								Log.d( TAG, "FullScreenWebViewActivity Switching to '" + tabUrl + "' : Success" );
-								WebViewFullScreenActivity.this.FullScreenWebView.loadUrl( tabUrl );
-							}
-					});
-    				buttonFrame.addView( tabButton );
-    			}
-    		}
+	    	try
+	        {
+	    		JSONArray tabs = config.getJSONArray( "tabs" );
+	    		if( tabs != null )
+	    		{
+	    			for( int i = 0; i< tabs.length(); i++ )
+	    			{
+	    				JSONObject tab = tabs.getJSONObject( i );
+	    				
+	    				final String tabUrl = tab.getString( "Url" );
+	    				final String tabImage = tab.getString( "Image" );
+	    				final String tabBadgeId = tab.getString( "BadgeId" );
+	    				
+	    				String badge = "";
+	    				if( ( tabBadgeId != null ) && ( tabBadgeId.length() > 0 ) )
+	    				{
+	    					badge = titleBarBadgeImage;
+	    				}
+	    				
+	    				Log.d( TAG, "FullScreenWebViewActivity Adding Tab : url = " + tabUrl + " image = " + tabImage + " badge = " + badge );
+	    				
+	    				RelativeLayout tabButton = CreateURLTab( tabUrl, tabImage, titleBarBackgroundColour, badge );
+	    				tabButton.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT, 1.0f));
+	    				titleBarFrame.addView( tabButton );
+	    			}
+	    		}
+	        }
+	        catch (org.json.JSONException ex)
+	        {
+	        }
         }
-        catch (org.json.JSONException ex)
-        {
-        }
-
-		this.FullScreenWebView = new WebView(this);
-		this.FullScreenWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+        
+        this.FullScreenWebView = new WebView(this);
+		this.FullScreenWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f));
 		this.FullScreenWebView.setWebViewClient(new InternalWebViewClient());
 		WebSettings webSettings = this.FullScreenWebView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
@@ -131,8 +190,16 @@ public class WebViewFullScreenActivity extends Activity
 		//String url = generateURL( page );
 		this.FullScreenWebView.loadUrl( url );
 		
-		splitFrame.addView( buttonFrame );
-		splitFrame.addView( this.FullScreenWebView );
+		if( titleBarOnTop == true )
+		{
+			splitFrame.addView( titleBarFrame );
+			splitFrame.addView( this.FullScreenWebView );
+		}
+		else
+		{
+			splitFrame.addView( this.FullScreenWebView );
+			splitFrame.addView( titleBarFrame );
+		}
 		
 		fullFrame.addView(splitFrame);
 

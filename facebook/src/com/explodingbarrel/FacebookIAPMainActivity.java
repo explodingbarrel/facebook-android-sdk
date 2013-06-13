@@ -74,9 +74,9 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
 		}
     }
     
-    boolean WebViewShowFullscreen( String url, String tabs, int targetWidth )
+    boolean WebViewShowFullscreen( String url, String config )
     {
-    	Log.d(TAG, "WebViewShowFullscreen : url = " + url + " tabs = " + tabs + " targetWidth = " + targetWidth );
+    	Log.d(TAG, "WebViewShowFullscreen : url = " + url + " config = " + config );
     	
     	boolean valid = false;
     	
@@ -85,8 +85,7 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     	{
     		Log.d(TAG, "WebViewShowFullscreen : Pending - Starting full screen webview activity" );
     		webViewIntent.putExtra("url", url);
-    		webViewIntent.putExtra("tabs", tabs);
-    		webViewIntent.putExtra("targetWidth", targetWidth);
+    		webViewIntent.putExtra("config", config);
     		startActivity( webViewIntent );
     		valid = true;
     	}
