@@ -264,6 +264,12 @@ public class WebViewFullScreenActivity extends Activity
 		return tabLayout;
 	}
 	
+	protected void onPause()
+	{ 
+		 super.onPause();
+		 this.terminateWebView();
+	} 
+	
 	public void onCreate(Bundle savedInstanceState) 
 	{
 		super.onCreate(savedInstanceState);
