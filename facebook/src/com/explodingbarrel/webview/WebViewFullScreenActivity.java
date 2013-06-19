@@ -5,8 +5,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.webkit.*;
 import android.widget.*;
 import android.widget.LinearLayout.LayoutParams;
@@ -27,7 +29,8 @@ public class WebViewFullScreenActivity extends Activity
 	 // Debug tag, for logging
     private static final String TAG = "WebView";
     
-	private WebView FullScreenWebView;
+	private WebView FullScreenWebView = null;
+	private ProgressBar WebViewProgress = null;
 	
 	class TabView
 	{
@@ -54,15 +57,41 @@ public class WebViewFullScreenActivity extends Activity
 	private List<TabView> Tabs = new ArrayList<TabView>();
 	
 	
-	private class InternalWebViewClient extends WebViewClient {
+	private class InternalWebViewClient extends WebViewClient 
+	{
 	    @Override
-	    public boolean shouldOverrideUrlLoading(WebView view, String url) {
+	    public boolean shouldOverrideUrlLoading(WebView view, String url) 
+	    {
 	        return false;
 	    }
 	    
 	    @Override
-	    public void onScaleChanged(WebView view, float oldScale, float newScale) {
+	    public void onScaleChanged(WebView view, float oldScale, float newScale) 
+	    {
 	    }
+	}
+	
+	private class InternalWebChromeClient extends WebChromeClient
+	{
+		private ProgressBar WebViewProgress = null;
+		
+		public InternalWebChromeClient( ProgressBar progressBar )
+		{
+			this.WebViewProgress = progressBar;
+		}
+		
+		@Override
+        public void onProgressChanged(WebView view, final int progress)
+        {
+            if(progress == 100)
+            {
+            	this.WebViewProgress.setVisibility(View.INVISIBLE);
+            }
+            else
+            {
+            	this.WebViewProgress.setVisibility(View.VISIBLE);
+            }	
+        }
 	}
 	
 	public class BadgeJavaScriptInterface
@@ -91,8 +120,14 @@ public class WebViewFullScreenActivity extends Activity
 
 	    public void close()
 	    {
-	    	this.WebView.finish();
+	    	this.WebView.terminateWebView();
 	    }
+	}
+	
+	private void terminateWebView()
+	{
+		UnityPlayer.UnitySendMessage( "WebViewCallbacks", "WebViewWillHide", "" );
+    	this.finish();
 	}
 	
 	private void updateBadge( int id, final String value )
@@ -308,8 +343,7 @@ public class WebViewFullScreenActivity extends Activity
 			public void onClick(View arg0)
 			{
 				Log.d( TAG, "FullScreenWebViewActivity Closing : Success" );
-				UnityPlayer.UnitySendMessage( "WebViewCallbacks", "WebViewWillHide", "" );
-				finish();
+				WebViewFullScreenActivity.this.terminateWebView();
 			}
 		});
         titleBarFrame.addView(closeButton);
@@ -382,8 +416,18 @@ public class WebViewFullScreenActivity extends Activity
 	        }
         }
         
+        RelativeLayout progressBarWebViewFrame = new RelativeLayout( this );
+        progressBarWebViewFrame.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f));
+        
+        this.WebViewProgress = new ProgressBar(this, null, android.R.attr.progressBarStyleLarge);
+	    RelativeLayout.LayoutParams progresBarLayout = new RelativeLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+	    progresBarLayout.addRule(RelativeLayout.CENTER_IN_PARENT);
+	    this.WebViewProgress.setLayoutParams(progresBarLayout);
+        
         this.FullScreenWebView = new WebView(this);
-		this.FullScreenWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT, 1.0f));
+        this.FullScreenWebView.setBackgroundColor(titleBarBackgroundColour);
+		this.FullScreenWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		this.FullScreenWebView.setWebChromeClient( new InternalWebChromeClient( this.WebViewProgress ) );
 		this.FullScreenWebView.setWebViewClient(new InternalWebViewClient());
 		WebSettings webSettings = this.FullScreenWebView.getSettings();
 		webSettings.setJavaScriptEnabled(true);
@@ -396,17 +440,20 @@ public class WebViewFullScreenActivity extends Activity
 		//Support for diff screens
 	    float scale = ((float)targetWidth) / metrics.widthPixels;
 	    this.FullScreenWebView.setInitialScale( (int)( scale * 100.0f ) );
-	    
+
 	    loadPage( url );
+	    
+	    progressBarWebViewFrame.addView( this.FullScreenWebView );
+	    progressBarWebViewFrame.addView( this.WebViewProgress );
 		
 		if( titleBarOnTop == true )
 		{
 			splitFrame.addView( titleBarFrame );
-			splitFrame.addView( this.FullScreenWebView );
+			splitFrame.addView( progressBarWebViewFrame );
 		}
 		else
 		{
-			splitFrame.addView( this.FullScreenWebView );
+			splitFrame.addView( progressBarWebViewFrame );
 			splitFrame.addView( titleBarFrame );
 		}
 		
@@ -416,5 +463,29 @@ public class WebViewFullScreenActivity extends Activity
         
         UnityPlayer.UnitySendMessage("WebViewCallbacks", "WebViewDidShow", "");
 	}
+	
+	@Override
+    public void onBackPressed()
+	{
+		this.terminateWebView();
+    }
+	
+	@Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if(event.getAction() == KeyEvent.ACTION_DOWN)
+        {
+            switch(keyCode)
+            {
+	            case KeyEvent.KEYCODE_BACK:
+	            {
+	            	this.terminateWebView();
+	            	return true;
+	            }
+            }
+
+        }
+        return super.onKeyDown(keyCode, event);
+    }
  
 }
