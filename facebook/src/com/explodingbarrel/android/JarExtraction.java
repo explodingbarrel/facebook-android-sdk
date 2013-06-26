@@ -7,8 +7,10 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.File;
-import java.util.jar.JarInputStream;
+import java.io.InputStream;
 import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 
 class JarExtraction 
 {
@@ -19,8 +21,7 @@ class JarExtraction
     String FilePath = null;
     String OutputPath = null;
     
-    FileInputStream FIS = null;
-    JarInputStream JIS = null;
+    InputStream JIS = null;
     FileOutputStream Writer = null;
     
     int kBufferSize = 1024;
@@ -43,25 +44,21 @@ class JarExtraction
     	boolean success = false;
     	try
     	{
-	    	this.FIS = new FileInputStream( this.JarPath );
-			this.JIS = new JarInputStream( new BufferedInputStream( this.FIS ) );
-			
-			//Find the entry we are trying to extract
-			JarEntry je;
-			while( ( je = this.JIS.getNextJarEntry() ) != null )
-			{
-				String candidate = je.getName();	
-				if( candidate.equals( this.FilePath ) == true )
-				{
-					Log.d(TAG, "JarExtraction Extracting " + this.FilePath + " from " + this.JarPath + " to " + this.OutputPath );
+    		JarFile jarFile = new JarFile( this.JarPath );
+    		if( jarFile != null )
+    		{
+    			JarEntry je = jarFile.getJarEntry( this.FilePath );
+    			if( je != null )
+    			{
+    				Log.d(TAG, "JarExtraction Extracting " + this.FilePath + " from " + this.JarPath + " to " + this.OutputPath );
+    				this.JIS = jarFile.getInputStream( je );
 					this.Writer = new FileOutputStream( this.OutputPath );
 					this.Buffer = new byte[kBufferSize];
 					this.StepCount = 0;
 					this.BytesWritten = 0;
 					success = true;
-					break;
-				}
-			}
+    			}
+    		}
     	}
     	catch( Exception ex )
     	{
