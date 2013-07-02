@@ -290,6 +290,7 @@ public class WebViewFullScreenActivity extends Activity
 		String titleBarHiResPostFix = "";
 		int titleBarBackgroundColour = 0xff000000;
 		int titleBarTextColour = 0xffffffff;
+		int frameBackgroundColour = 0xff000000;
 		boolean titleBarOnTop = true;
 		boolean titleBarExpandToFit = true;
 		
@@ -305,6 +306,7 @@ public class WebViewFullScreenActivity extends Activity
     		{
     			titleBarCloseImage = titleBar.getString( "CloseImage" );
     			titleBarBackgroundColour = titleBar.getInt( "BackgroundColour" );
+    			frameBackgroundColour = titleBarBackgroundColour;
     			titleBarTextColour = titleBar.getInt( "TextColour" );
     			titleBarOnTop = titleBar.getBoolean( "OnTop" );
     			titleBarBadgeImage = titleBar.getString( "BadgeImage" );
@@ -314,6 +316,10 @@ public class WebViewFullScreenActivity extends Activity
     		}
     		
     		targetWidth = config.getInt( "targetWidth" );
+    		if( config.has( "BackgroundColour" ) == true )
+    		{
+    			frameBackgroundColour = config.getInt( "BackgroundColour" );
+    		}
         }
         catch (org.json.JSONException ex)
         {
@@ -431,7 +437,7 @@ public class WebViewFullScreenActivity extends Activity
 	    this.WebViewProgress.setLayoutParams(progresBarLayout);
         
         this.FullScreenWebView = new WebView(this);
-        this.FullScreenWebView.setBackgroundColor(titleBarBackgroundColour);
+        this.FullScreenWebView.setBackgroundColor(frameBackgroundColour);
 		this.FullScreenWebView.setLayoutParams(new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		this.FullScreenWebView.setWebChromeClient( new InternalWebChromeClient( this.WebViewProgress ) );
 		this.FullScreenWebView.setWebViewClient(new InternalWebViewClient());

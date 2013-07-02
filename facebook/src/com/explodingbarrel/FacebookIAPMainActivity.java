@@ -46,19 +46,16 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
+    	 if (!isTaskRoot()) {
+             Intent intent = getIntent();
+             String action = intent.getAction();
+             if (intent.hasCategory(Intent.CATEGORY_LAUNCHER) && action != null && action.equals(Intent.ACTION_MAIN)) {
+                 finish();
+                 return;
+             }
+         }
+    	 
         super.onCreate(savedInstanceState);
-        
-	    //try 
-	    //{
-	    //    PackageInfo info = getPackageManager().getPackageInfo("com.kabam.ff6android", PackageManager.GET_SIGNATURES);
-	    //    for (Signature signature : info.signatures) 
-	    //    {
-	    //    	MessageDigest md = MessageDigest.getInstance("SHA");
-	    //    	md.update(signature.toByteArray());
-	    //    	Log.d("KeyHash:", Base64.encodeToString(md.digest(), Base64.DEFAULT));
-	    //    }
-	    //} 
-	    //catch (Exception e) {}
     }
     
     @Override
