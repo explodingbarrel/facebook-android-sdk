@@ -28,10 +28,10 @@ import javax.crypto.Mac;
 
 import com.unity3d.player.*;
 
-class APKVerify 
+class Zippo 
 {
 	// Debug tag, for logging
-    private static final String TAG = "APKVerify";
+    //private static final String TAG = "APKVerify";
 	
     String JarPath = null;
     String BundleID = null;
@@ -66,23 +66,23 @@ class APKVerify
     int FilesExamined = 0;
     int BytesProcessed = 0;
     
-    public APKVerify( String jarPath )
+    public Zippo( String jarPath )
     {
     	this.JarPath = jarPath;
     	
     	//Log.d(TAG, "APKVerify jarPath = " + this.JarPath );
     }
     
-    public APKVerify( String jarPath, String bundleID, String salt )
+    public Zippo( String jarPath, String salt )
     {
     	this.JarPath = jarPath;
-    	this.BundleID = bundleID;
+    	this.BundleID = UnityPlayer.currentActivity.getPackageName();
     	this.Salt = salt;
     	
     	//Log.d(TAG, "APKVerify jarPath = " + this.JarPath + " bundleID = " + bundleID + " salt = " + salt );
     }
     
-    public boolean StartSha1Signature()
+    public boolean Start()
     {
     	boolean success = false;
     	
@@ -166,7 +166,6 @@ class APKVerify
         {
         	String lhsName = lhs.getName();
         	String rhsName = rhs.getName();
-        	//Log.d(TAG, "Compare " + lhsName + " " + rhsName );
         	return String.CASE_INSENSITIVE_ORDER.compare(lhsName, rhsName);
         }
     }
@@ -255,7 +254,7 @@ class APKVerify
         	    	if( bytesRead != -1 )
         	    	{
         	    		maxBytesToRead -= bytesRead;
-        	    		this.updateDigest( this.Buffer, 0, bytesRead );
+        	    		this.update( this.Buffer, 0, bytesRead );
         	    		this.BytesProcessed += bytesRead;
         	    	}
         	    	else
@@ -277,7 +276,7 @@ class APKVerify
     	
     }
     
-    public boolean StepSha1Signature( int maxBytesToRead, int maxFilesToExamine, int stepsBeforeLog )
+    public boolean Step( int maxBytesToRead, int maxFilesToExamine, int stepsBeforeLog )
     {
     	boolean complete = false;
     	
@@ -311,7 +310,7 @@ class APKVerify
     	return complete;
     }
     
-    public String CompleteSha1Signature()
+    public String Complete()
     {
     	String sha1 = "";
     	
@@ -319,7 +318,7 @@ class APKVerify
 		{
     		case Complete:
     		{
-    			byte[] sha1hash = this.getDigest();
+    			byte[] sha1hash = this.getResult();
 	    		if( sha1hash != null )
 	    		{
 		    		sha1 = Base64.encodeToString( sha1hash, Base64.NO_WRAP );
@@ -340,22 +339,22 @@ class APKVerify
     	return sha1;
     }
     
-	public String SyncSha1Signature()
+	public String SyncRun()
 	{
 		String sha1 = "";
-    	boolean success = this.StartSha1Signature();
+    	boolean success = this.Start();
     	if( success == true )
     	{
 	    	boolean complete = false;
-	    	while( ( complete = this.StepSha1Signature(kBufferSize, 10, 20) ) == false )
+	    	while( ( complete = this.Step(kBufferSize, 10, 20) ) == false )
 	    	{
 	    	}
-	    	sha1 = this.CompleteSha1Signature();
+	    	sha1 = this.Complete();
     	}
     	return sha1;
 	}
 	
-	private byte[] getDigest()
+	private byte[] getResult()
 	{
 		if( this.MD != null )
 		{
@@ -371,7 +370,7 @@ class APKVerify
 		}
 	}
 	
-	private void updateDigest( byte[] bytes, int offset, int length )
+	private void update( byte[] bytes, int offset, int length )
 	{
 		if( this.MD != null )
 		{

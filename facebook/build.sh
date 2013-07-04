@@ -1,7 +1,7 @@
 #!/bin/bash
 
 cp -f AndroidManifest.base.xml AndroidManifest.xml 
-ant debug
+ant release
 
 if [ $? == 0 ]; then
 	cp -f AndroidManifest.fast.xml AndroidManifest.xml 
