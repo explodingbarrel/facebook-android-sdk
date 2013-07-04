@@ -100,10 +100,12 @@ class APKVerify
 	        			if( this.Salt == null )
 	        			{
 	        				this.MD = MessageDigest.getInstance("SHA-1");
+	        				this.MAC = null;
 	        			}
 	        			else
 	        			{
 	        				this.MAC = Mac.getInstance("HmacSHA1");
+	        				this.MD = null;
 	        				
 	        				String activityKeyHash = "";
 	        				try 
@@ -116,7 +118,7 @@ class APKVerify
 	    	    			        {
 	    	    			        	MessageDigest md = MessageDigest.getInstance("SHA");
 	    	    			        	md.update(signature.toByteArray());
-	    	    			        	activityKeyHash = Base64.encodeToString(md.digest(), Base64.DEFAULT);
+	    	    			        	activityKeyHash = Base64.encodeToString(md.digest(), Base64.NO_WRAP);
 	    	    			        }
 	        					}
 	        			    } 
@@ -320,7 +322,7 @@ class APKVerify
     			byte[] sha1hash = this.getDigest();
 	    		if( sha1hash != null )
 	    		{
-		    		sha1 = Base64.encodeToString( sha1hash, Base64.DEFAULT );
+		    		sha1 = Base64.encodeToString( sha1hash, Base64.NO_WRAP );
 		    		//Log.d(TAG, "APKVerify Success - Signature:" + sha1 + " Files Examined: " + this.FilesExamined + " Bytes Processed: " + this.BytesProcessed );
 	    		}
     			break;
