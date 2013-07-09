@@ -31,6 +31,7 @@ public class WebViewFullScreenActivity extends Activity
     
 	private WebView FullScreenWebView = null;
 	private ProgressBar WebViewProgress = null;
+	private List<String> RootPages = new ArrayList<String>();
 	
 	class TabView
 	{
@@ -279,6 +280,7 @@ public class WebViewFullScreenActivity extends Activity
 		
 		String url = getIntent().getExtras().getString("url");
 		String configJson = getIntent().getExtras().getString("config");
+		this.RootPages.clear();
 		
 		Log.d( TAG, "FullScreenWebViewActivity onCreate : url = " + url + " config = " + configJson );
 		
@@ -403,7 +405,12 @@ public class WebViewFullScreenActivity extends Activity
     					int tabBadgeTopMarginPx = (int) (tabBadgeTopMargin * metrics.density + 0.5f);
     					
     					Log.d( TAG, "FullScreenWebViewActivity Adding Tab : url = " + tabUrl + " image = " + tabImage + " tabImageSelected = " + tabImageSelected + " tabBadgeId = " + tabBadgeId + " badge = " + badgeImage + " offset = (" + tabBadgeLeftMarginPx + "," + tabBadgeTopMarginPx + ")");
-	    				
+	    				this.RootPages.add( tabUrl );
+	    				if( tab.has( "AltRootUrl" ) == true )
+	    	    		{
+	    					String altRootUrl = tab.getString( "AltRootUrl" );
+	    					this.RootPages.add( altRootUrl );
+	    	    		}
 	    				RelativeLayout tabButton = CreateURLTab( tabUrl,
 	    															tabImage,
 	    															tabImageSelected,
@@ -476,10 +483,38 @@ public class WebViewFullScreenActivity extends Activity
         UnityPlayer.UnitySendMessage("WebViewCallbacks", "WebViewDidShow", "");
 	}
 	
+	private boolean isRootPage( String url )
+	{
+		boolean isRoot = false;
+		for( final String candidate : this.RootPages )
+		{
+			if( ( url.equals( candidate ) == true ) || ( url.equals( candidate + "/" ) == true ) )
+			{
+				isRoot = true;
+				break;
+			}
+		}
+		
+		return isRoot;
+	}
+	
 	@Override
     public void onBackPressed()
 	{
-		this.terminateWebView();
+		//Check to see if we are on one of the root pages
+		String current = this.FullScreenWebView.getOriginalUrl();
+		boolean isRoot = isRootPage( current );
+		boolean canBack = this.FullScreenWebView.canGoBack();
+		Log.d( TAG, "FullScreenWebViewActivity onBackPressed : current = " + current + " isRoot = " + isRoot + " canBack " + canBack );
+		
+		if( ( canBack == true ) && ( isRoot == false ) )
+		{
+			this.FullScreenWebView.goBack();
+		}
+		else
+		{
+			this.terminateWebView();
+		}
     }
 	
 	@Override
@@ -491,7 +526,7 @@ public class WebViewFullScreenActivity extends Activity
             {
 	            case KeyEvent.KEYCODE_BACK:
 	            {
-	            	this.terminateWebView();
+	            	this.onBackPressed();
 	            	return true;
 	            }
             }
