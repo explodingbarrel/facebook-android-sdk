@@ -104,6 +104,7 @@ public class WebViewFullScreenActivity extends Activity
 	        this.WebView = webView;
 	    }
 
+		@JavascriptInterface
 	    public void setBadge(int id, String value)
 	    {
 	    	this.WebView.updateBadge( id, value );
@@ -119,6 +120,7 @@ public class WebViewFullScreenActivity extends Activity
 	        this.WebView = webView;
 	    }
 
+		@JavascriptInterface
 	    public void close()
 	    {
 	    	this.WebView.terminateWebView();
@@ -142,32 +144,39 @@ public class WebViewFullScreenActivity extends Activity
 	    		{
 	    			public void run()
 	    			{
-	    				boolean visible = false;   				
-	    				if( ( value != null ) && ( value.length() > 0 ) )
+	    				try
 	    				{
-		    				try
+		    				boolean visible = false;   				
+		    				if( ( value != null ) && ( value.length() > 0 ) )
 		    				{
-		    				   int val = Integer.parseInt( value );
-		    				   if( val != 0 )
-		    				   {
-		    					   visible = true;
-		    				   }
+			    				try
+			    				{
+			    				   int val = Integer.parseInt( value );
+			    				   if( val != 0 )
+			    				   {
+			    					   visible = true;
+			    				   }
+			    				}
+			    				catch (NumberFormatException nfe)
+			    				{
+			    				}
 		    				}
-		    				catch (NumberFormatException nfe)
-		    				{
-		    				}
+	
+		    	    		if( visible == true  )
+		    	    		{
+		    	    			tab.BadgeText.setText( value );
+		    	    			tab.BadgeLayout.setVisibility(View.VISIBLE);
+		    	    		}
+		    	    		else
+		    	    		{
+		    	    			tab.BadgeText.setText( "" );
+		    	    			tab.BadgeLayout.setVisibility(View.INVISIBLE);
+		    	    		}
 	    				}
-
-	    	    		if( visible == true  )
-	    	    		{
-	    	    			tab.BadgeText.setText( value );
-	    	    			tab.BadgeLayout.setVisibility(View.VISIBLE);
-	    	    		}
-	    	    		else
-	    	    		{
-	    	    			tab.BadgeText.setText( "" );
-	    	    			tab.BadgeLayout.setVisibility(View.INVISIBLE);
-	    	    		}
+	    				catch( Exception ex )
+	    				{
+	    					Log.d( TAG, "FullScreenWebViewActivity Badges exception: '" + ex.getMessage() );
+	    				}
 	    			}
 	    		});
 				break;
@@ -313,7 +322,10 @@ public class WebViewFullScreenActivity extends Activity
     			titleBarOnTop = titleBar.getBoolean( "OnTop" );
     			titleBarBadgeImage = titleBar.getString( "BadgeImage" );
     			titleBarExpandToFit = titleBar.getBoolean( "ExpandToFit" );
-    			titleBarHighlightedPostFix = titleBar.getString( "HighlightedImagePostFix" );
+    			if( titleBar.has( "HighlightedImagePostFix" ) == true )
+	    		{
+    				titleBarHighlightedPostFix = titleBar.getString( "HighlightedImagePostFix" );
+	    		}
     			titleBarHiResPostFix = titleBar.getString( "HiResImagePostFix" );
     		}
     		
