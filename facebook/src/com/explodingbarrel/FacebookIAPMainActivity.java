@@ -131,6 +131,7 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     			 Window window = FacebookIAPMainActivity.this.ActiveWebViewPopup.getWindow();
     			 window.setFlags( WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL );
     			 window.clearFlags( WindowManager.LayoutParams.FLAG_DIM_BEHIND );
+    			 window.setBackgroundDrawableResource(android.R.color.transparent);
     		     WindowManager.LayoutParams wmlp = window.getAttributes();
     		     wmlp.gravity = Gravity.TOP | Gravity.LEFT;
     		     wmlp.x = (int)x;

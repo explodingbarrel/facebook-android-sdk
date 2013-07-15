@@ -53,6 +53,7 @@ public class WebViewDialog extends Dialog
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		
 		RelativeLayout dialogFrame = new RelativeLayout( this.Parent );
+		dialogFrame.setBackgroundColor( 0xff000000 );
 
         WebView webView = new WebView(this.Parent);
         webView.setWebViewClient( new DialogWebViewClient() );
@@ -66,10 +67,10 @@ public class WebViewDialog extends Dialog
 	    
 		webView.loadUrl( this.Url );
 		
-		RelativeLayout.LayoutParams webViewLayout = new RelativeLayout.LayoutParams( this.Width, this.Height );
+		RelativeLayout.LayoutParams webViewLayout = new RelativeLayout.LayoutParams( LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT );
 		dialogFrame.addView( webView, webViewLayout );
 		
-		RelativeLayout.LayoutParams dialogLayout = new RelativeLayout.LayoutParams( LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT );
+		RelativeLayout.LayoutParams dialogLayout = new RelativeLayout.LayoutParams( this.Width, this.Height );
 		setContentView( dialogFrame, dialogLayout );
 	}
 }
