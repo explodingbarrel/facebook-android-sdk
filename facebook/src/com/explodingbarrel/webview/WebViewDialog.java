@@ -32,6 +32,13 @@ public class WebViewDialog extends Dialog
 	    public void onScaleChanged( WebView view, float oldScale, float newScale ) 
 	    {
 	    }
+	    
+	    @Override
+	    public void onPageFinished(WebView view, String url)
+	    {
+	    	view.setBackgroundColor( 0x00000000 );
+	    }
+
 	}
 	
 	public WebViewDialog( Activity a, String url, int targetWidth, int x, int y, int width, int height )
@@ -61,6 +68,7 @@ public class WebViewDialog extends Dialog
 		webSettings.setJavaScriptEnabled( true );
 		webSettings.setLoadWithOverviewMode( true );
 		webSettings.setUseWideViewPort(true);
+		webView.setBackgroundColor( 0x00000000 );
 		
 		float scale = ((float)this.TargetWidth) / this.Width;
 		webView.setInitialScale( (int)( scale * 100.0f ) );
