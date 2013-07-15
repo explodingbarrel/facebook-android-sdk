@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.view.Gravity;
 import android.webkit.*;
 import android.widget.*;
 import android.widget.LinearLayout.LayoutParams;
@@ -52,12 +53,8 @@ public class WebViewDialog extends Dialog
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
 		
 		RelativeLayout dialogFrame = new RelativeLayout( this.Parent );
-        RelativeLayout.LayoutParams dialogFrameLayout = new RelativeLayout.LayoutParams( this.Width, this.Height );
-        dialogFrameLayout.leftMargin = this.X;
-        dialogFrameLayout.topMargin = this.Y;
 
         WebView webView = new WebView(this.Parent);
-        webView.setLayoutParams( new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT) );
         webView.setWebViewClient( new DialogWebViewClient() );
 		WebSettings webSettings = webView.getSettings();
 		webSettings.setJavaScriptEnabled( true );
@@ -68,9 +65,11 @@ public class WebViewDialog extends Dialog
 		webView.setInitialScale( (int)( scale * 100.0f ) );
 	    
 		webView.loadUrl( this.Url );
-
-		dialogFrame.addView( webView );
-        	
-		setContentView( dialogFrame, dialogFrameLayout );
+		
+		RelativeLayout.LayoutParams webViewLayout = new RelativeLayout.LayoutParams( this.Width, this.Height );
+		dialogFrame.addView( webView, webViewLayout );
+		
+		RelativeLayout.LayoutParams dialogLayout = new RelativeLayout.LayoutParams( LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT );
+		setContentView( dialogFrame, dialogLayout );
 	}
 }

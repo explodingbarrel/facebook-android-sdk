@@ -15,6 +15,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.WindowManager.LayoutParams;
+import android.view.Gravity;
 
 import com.unity3d.player.*;
 import com.facebook.*;
@@ -96,6 +97,11 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     
     private WebViewDialog ActiveWebViewPopup = null; 
     
+    public static float clamp(float val, float min, float max) 
+    {
+        return Math.max(min, Math.min(max, val));
+    }
+    
     boolean WebViewPopup( final String url, final int targetWidth, final float normalizedX, final float normalizedY, final float normalizedWidth, final float normalizedHeight )
     {	
     	Log.d(TAG, "WebViewPopup : url = " + url + " normalizedX = " + normalizedX + " normalizedY = " + normalizedY + " normalizedWidth = " + normalizedWidth + " normalizedHeight = " + normalizedHeight );
@@ -107,19 +113,28 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
     			 DisplayMetrics metrics = new DisplayMetrics();
     			 getWindowManager().getDefaultDisplay().getMetrics(metrics);
     			 
+    			 float clampedNormalizedX = clamp( normalizedX, 0.0f, 1.0f );
+    			 float clampedNormalizedY = clamp( normalizedY, 0.0f, 1.0f );
+    			 float clampedNormalizedWidth = clamp( normalizedWidth, 0.0f, 1.0f );
+    			 float clampedNormalizedHeight = clamp( normalizedHeight, 0.0f, 1.0f );
+    			 
     			 Log.d(TAG, "WebViewPopup : Screen Width = " + metrics.widthPixels + " Screen Height = " + metrics.heightPixels );
 				
-    			 float x = normalizedX * metrics.widthPixels;
-    			 float y = normalizedY * metrics.heightPixels;
-    			 float width = normalizedWidth * metrics.widthPixels;
-    			 float height = normalizedHeight * metrics.heightPixels;
+    			 float x = clampedNormalizedX * metrics.widthPixels;
+    			 float y = clampedNormalizedY * metrics.heightPixels;
+    			 float width = clampedNormalizedWidth * metrics.widthPixels;
+    			 float height = clampedNormalizedHeight * metrics.heightPixels;
     			 
-    			 Log.d(TAG, "WebViewPopup : url = " + url + " x = " + x + " y = " + y + " width = " + width + " height = " + height );
+    			 Log.d(TAG, "WebViewPopup : url = " + url + " x = " + (int)x + " y = " + (int)y + " width = " + (int)width + " height = " + (int)height );
     			 
     			 FacebookIAPMainActivity.this.ActiveWebViewPopup = new WebViewDialog( FacebookIAPMainActivity.this, url, targetWidth, (int)x, (int)y, (int)width, (int)height );
     			 Window window = FacebookIAPMainActivity.this.ActiveWebViewPopup.getWindow();
     			 window.setFlags( WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL );
     			 window.clearFlags( WindowManager.LayoutParams.FLAG_DIM_BEHIND );
+    		     WindowManager.LayoutParams wmlp = window.getAttributes();
+    		     wmlp.gravity = Gravity.TOP | Gravity.LEFT;
+    		     wmlp.x = (int)x;
+    		     wmlp.y = (int)y;
     			 FacebookIAPMainActivity.this.ActiveWebViewPopup.show();
              }
     	} );
