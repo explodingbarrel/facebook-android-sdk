@@ -2,6 +2,7 @@ package com.explodingbarrel.facebook;
 
 import android.app.Dialog;
 import android.app.Activity;
+import android.util.Log;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
@@ -10,8 +11,13 @@ import android.webkit.*;
 import android.widget.*;
 import android.widget.LinearLayout.LayoutParams;
 
+import com.unity3d.player.*;
+
 public class WebViewDialog extends Dialog
 {
+	 // Debug tag, for logging
+    private static final String TAG = "WebView";
+	
 	private Activity Parent = null;
 	private String Url = null;
 	private int TargetWidth = 1024;
@@ -25,7 +31,17 @@ public class WebViewDialog extends Dialog
 	    @Override
 	    public boolean shouldOverrideUrlLoading( WebView view, String url )
 	    {
-	        return false;
+	    	Log.d( TAG, "DialogWebViewClient shouldOverrideUrlLoading : url = " + url );
+	    	
+	    	if( url.startsWith( "client://" ) == true )
+	    	{	
+	    		UnityPlayer.UnitySendMessage( "webview_callbacks", "OnUrl", url );
+	    		return true;
+	    	}
+	    	else
+	    	{
+	    		return false;
+	    	}
 	    }
 	    
 	    @Override
