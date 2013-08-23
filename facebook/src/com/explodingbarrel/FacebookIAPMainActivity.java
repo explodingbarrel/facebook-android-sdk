@@ -72,6 +72,13 @@ public class FacebookIAPMainActivity extends com.explodingbarrel.iap.MainActivit
 		}
     }
     
+    @Override
+    protected void onPause()
+	{ 
+		 super.onPause();
+		 this.WebViewPopupClose();
+	} 
+    
     boolean WebViewShowFullscreen( String url, String config )
     {
     	Log.d(TAG, "WebViewShowFullscreen : url = " + url + " config = " + config );
