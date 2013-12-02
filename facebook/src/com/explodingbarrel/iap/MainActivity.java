@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.util.Log;
 import android.content.Intent;
+import android.view.KeyEvent;
 
 import com.unity3d.player.*;
 
@@ -37,7 +38,7 @@ public class MainActivity extends UnityPlayerActivity
     public static MainActivity         _this;
     public static int RC_REQUEST  = 1;
     public static boolean _supported = false;
-
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
@@ -46,6 +47,27 @@ public class MainActivity extends UnityPlayerActivity
     }
     
     
+    @Override
+    public void onBackPressed()
+    {
+    	// instead of calling UnityPlayerActivity.onBackPressed, we send the message ourselves because there's a crash in Unity 4.3
+		Log.d(TAG, "OnBackPressed");
+		SendMessage(UNITY_PLUGIN_NAME, "onBackPressed", "");
+    }
+    
+    
+	@Override
+    public boolean onKeyDown(int keyCode, KeyEvent event)
+    {
+        if(keyCode == KeyEvent.KEYCODE_BACK)
+        {
+        	Log.d(TAG, "onKeyDown - calling onBackPressed");
+           	this.onBackPressed();
+           	return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
     public static void Setup( String publicKey, boolean debug )
     {
         if (_this != null && _this.mHelper == null)
@@ -69,6 +91,7 @@ public class MainActivity extends UnityPlayerActivity
     {
         Log.d(TAG, "SendMessage: " + plugin + " " + message + " " + data);
         UnityPlayer.UnitySendMessage(plugin, message, data);
+        Log.d(TAG, "Post endMessage: " + plugin + " " + message + " " + data);
     }
     
     public static void PurchaseItem( String productId, String type, String payLoad )
@@ -208,6 +231,10 @@ public class MainActivity extends UnityPlayerActivity
                     SendMessage(UNITY_PLUGIN_NAME, "OnIAPSuppored", "");
                 }
             }
+            else
+            {
+            	 SendMessage(UNITY_PLUGIN_NAME, "OnIAPUnsupported", "");
+            }
 
             Log.d(TAG, "Query inventory was successful.");
         }
@@ -217,6 +244,7 @@ public class MainActivity extends UnityPlayerActivity
     IabHelper.OnConsumeFinishedListener mConsumeFinishedListener = new IabHelper.OnConsumeFinishedListener() {
         public void onConsumeFinished(Purchase purchase, IabResult result) {
             Log.d(TAG, "onConsumeFinished(" + result + ")");
+            SendMessage(UNITY_PLUGIN_NAME, "OnIAPComplete", "");
         }
     };
 
