@@ -206,6 +206,8 @@ public class MainActivity extends UnityPlayerActivity
             Log.d(TAG, "Query inventory finished.");
             if (result.isFailure()) {
                 //complain("Failed to query inventory: " + result);
+            	Log.d(TAG, "Query inventory failed: " + result);
+            	SendMessage(UNITY_PLUGIN_NAME, "OnIAPUnsupported", "");
                 return;
             }
 
