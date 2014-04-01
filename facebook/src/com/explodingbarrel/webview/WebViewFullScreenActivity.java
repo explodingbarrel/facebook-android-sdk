@@ -498,34 +498,40 @@ public class WebViewFullScreenActivity extends Activity
 	private boolean isRootPage( String url )
 	{
 		boolean isRoot = false;
-		for( final String candidate : this.RootPages )
+		if(this != null && url != null && this.RootPages != null)
 		{
-			if( ( url.equals( candidate ) == true ) || ( url.equals( candidate + "/" ) == true ) )
+			for( final String candidate : this.RootPages )
 			{
-				isRoot = true;
-				break;
-			}
+				if( ( url.equals( candidate ) == true ) || ( url.equals( candidate + "/" ) == true ) )
+				{
+					isRoot = true;
+					break;
+				}
+			}		
 		}
-		
+
 		return isRoot;
 	}
 	
 	@Override
     public void onBackPressed()
 	{
-		//Check to see if we are on one of the root pages
-		String current = this.FullScreenWebView.getOriginalUrl();
-		boolean isRoot = isRootPage( current );
-		boolean canBack = this.FullScreenWebView.canGoBack();
-		Log.d( TAG, "FullScreenWebViewActivity onBackPressed : current = " + current + " isRoot = " + isRoot + " canBack " + canBack );
-		
-		if( ( canBack == true ) && ( isRoot == false ) )
+		if(this != null)
 		{
-			this.FullScreenWebView.goBack();
-		}
-		else
-		{
-			this.terminateWebView();
+			//Check to see if we are on one of the root pages
+			String current = this.FullScreenWebView.getOriginalUrl();
+			boolean isRoot = isRootPage( current );
+			boolean canBack = this.FullScreenWebView.canGoBack();
+			Log.d( TAG, "FullScreenWebViewActivity onBackPressed : current = " + current + " isRoot = " + isRoot + " canBack " + canBack );
+			
+			if( ( canBack == true ) && ( isRoot == false ) )
+			{
+				this.FullScreenWebView.goBack();
+			}
+			else
+			{
+				this.terminateWebView();
+			}		
 		}
     }
 	
